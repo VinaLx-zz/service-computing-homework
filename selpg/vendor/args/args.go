@@ -134,7 +134,7 @@ func getSources() chan *ReadSrc {
 
 	coroutine := func() {
 		if len(flag.Args()) == 0 {
-			channel <- &ReadSrc{Reader: os.Stdout}
+			channel <- &ReadSrc{Reader: os.Stdin}
 			close(channel)
 			return
 		}

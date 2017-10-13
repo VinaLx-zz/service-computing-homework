@@ -35,7 +35,9 @@ func printOne(src *args.ReadSrc, a *args.Args) {
 func selpg(a *args.Args) {
 	for source := range a.Sources {
 		printOne(source, a)
-		source.Next <- true
+		if source.Next != nil {
+			source.Next <- true
+		}
 	}
 }
 
