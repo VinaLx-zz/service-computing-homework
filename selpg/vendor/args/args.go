@@ -13,7 +13,7 @@ import (
 
 // Args is the struct returned by command line argument parser
 type Args struct {
-	Sources []io.Reader
+	Sources chan *ReadSrc
 	Dest    io.Writer
 	Filter  PageFilter
 	Pager   Pager
@@ -30,6 +30,13 @@ func Get() *Args {
 // PageFilter receive the page number and the page content returns whether
 // the page is wanted or not, and whether it should be the last page
 type PageFilter func(int, []byte) (bool, bool)
+
+// ReadSrc specifies the name and reader of the source
+type ReadSrc struct {
+	Reader io.Reader
+	Name   string
+	Next   chan bool
+}
 
 // Pager read string from the reader and combine them into pages
 type Pager func(io.Reader) chan []byte
@@ -101,9 +108,11 @@ func fixLinePager(n uint) Pager {
 	}
 }
 
-func errorExit(reason string) {
+func argumentError(reason string, usage bool) {
 	fmt.Fprintln(os.Stderr, reason)
-	flag.Usage()
+	if usage {
+		flag.Usage()
+	}
 	os.Exit(2)
 }
 
@@ -111,28 +120,46 @@ var args *Args
 
 func pageFilterOrExit(start, end int) PageFilter {
 	if start < 0 || end < 0 {
-		errorExit("both start and end argument should be positive")
+		argumentError("both start and end argument should be positive", true)
 	}
 	if start > end {
-		errorExit("start should be less than end")
+		argumentError("start should be less than end", true)
 	}
 	return pageFilter(start, end)
 }
 
-func getSourcesOrExit() []io.Reader {
-	// assert flag.Parsed
-	if len(flag.Args()) == 0 {
-		return []io.Reader{os.Stdin}
-	}
-	sources := make([]io.Reader, 0, len(flag.Args()))
-	for _, f := range flag.Args() {
-		file, err := os.Open(f)
-		if err != nil {
-			errorExit(err.Error())
+func getSources() chan *ReadSrc {
+	channel := make(chan *ReadSrc)
+	next := make(chan bool)
+
+	coroutine := func() {
+		if len(flag.Args()) == 0 {
+			channel <- &ReadSrc{Reader: os.Stdout}
+			close(channel)
+			return
 		}
-		sources = append(sources, file)
+		for _, f := range flag.Args() {
+			file, err := os.Open(f)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err.Error())
+				continue
+			}
+			// equivalent: name := len(flag.Args()) == 1 ? "" : f
+			var name string
+			if len(flag.Args()) != 1 {
+				name = f
+			}
+			channel <- &ReadSrc{Name: name, Reader: file, Next: next}
+			b := <-next // waiting user handing over control
+			file.Close()
+			if !b {
+				break
+			}
+		}
+		close(channel)
 	}
-	return sources
+	go coroutine()
+	return channel
 }
 
 func getDestOrExit(dest string) io.Writer {
@@ -148,7 +175,7 @@ func getDestOrExit(dest string) io.Writer {
 	cmd := exec.Command(cmds[0], cmds[1:]...)
 	writer, err := cmd.StdinPipe()
 	if err != nil {
-		errorExit(err.Error())
+		argumentError(err.Error(), false)
 	}
 	return writer
 }
@@ -161,7 +188,6 @@ func getPagerOrExit(lines uint, pageSep bool) Pager {
 }
 
 func parseArgs() *Args {
-
 	start := flag.Int("s", -1, "the starting index of page number (mandatory)")
 	end := flag.Int("e", -1, "the ending index of page number (mandatory)")
 	pageSeperator := flag.Bool("f", false, "use \\f to seperate pages")
@@ -172,7 +198,7 @@ func parseArgs() *Args {
 
 	flag.Parse()
 	filter := pageFilterOrExit(*start, *end)
-	sources := getSourcesOrExit()
+	sources := getSources()
 	destWriter := getDestOrExit(*dest)
 	pager := getPagerOrExit(*pageLines, *pageSeperator)
 	return &Args{

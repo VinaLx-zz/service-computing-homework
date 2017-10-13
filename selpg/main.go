@@ -11,23 +11,31 @@ func errorExit(reason string) {
 	os.Exit(1)
 }
 
-func selpg(a *args.Args) {
-	for _, reader := range a.Sources {
-		n := 0
-		for page := range a.Pager(reader) {
-			yes, last := a.Filter(n, page)
-			if yes {
-				_, err := a.Dest.Write(page)
-				if err != nil {
-					errorExit(fmt.Sprintf(
-						"Unexpected error on write: %s", err.Error()))
-				}
+func printOne(src *args.ReadSrc, a *args.Args) {
+	if len(src.Name) != 0 {
+		a.Dest.Write([]byte(fmt.Sprintf("%s:\n", src.Name)))
+	}
+	n := 0
+	for page := range a.Pager(src.Reader) {
+		yes, last := a.Filter(n, page)
+		if yes {
+			_, err := a.Dest.Write(page)
+			if err != nil {
+				errorExit(fmt.Sprintf(
+					"Unexpected error on write: %s", err.Error()))
 			}
-			if last {
-				break
-			}
-			n++
 		}
+		if last {
+			break
+		}
+		n++
+	}
+}
+
+func selpg(a *args.Args) {
+	for source := range a.Sources {
+		printOne(source, a)
+		source.Next <- true
 	}
 }
 
