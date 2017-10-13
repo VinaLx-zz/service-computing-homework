@@ -174,6 +174,9 @@ func getDestOrExit(dest string) io.Writer {
 	cmds := spaces.Split(dest, -1)
 	cmd := exec.Command(cmds[0], cmds[1:]...)
 	writer, err := cmd.StdinPipe()
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Start()
 	if err != nil {
 		argumentError(err.Error(), false)
 	}
