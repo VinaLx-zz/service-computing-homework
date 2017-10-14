@@ -92,6 +92,18 @@ line 5 of file two
 line 6 of file two
 ```
 
+Ripe the output to "sort"
+
+```shell
+$ ./selpg -s 1 -e 2 -l 3 -d "sort -r" file1
+line 9 of file one
+line 8 of file one
+line 7 of file one
+line 6 of file one
+line 5 of file one
+line 4 of file one
+```
+
 Invalid inputs:
 ```
 $ ./selpg -s 3 -e 2 -l 3
