@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"entity"
 	"err"
+	"log"
 	"os"
 )
 
@@ -18,6 +19,7 @@ const rewritePerm = os.O_WRONLY | os.O_CREATE | os.O_TRUNC
 func LoadUsers() entity.Users {
 	file, e := os.Open(UserFile())
 	if e != nil {
+		log.Printf("No User file; %s\n", e.Error())
 		return entity.NewUsers()
 	}
 	us, e := entity.DeserializeUser(file)
@@ -27,11 +29,12 @@ func LoadUsers() entity.Users {
 
 // LoadMeetings from Meeting
 func LoadMeetings() *entity.Meetings {
-	file, err := os.Open(MeetingFile())
-	if err != nil {
+	file, e := os.Open(MeetingFile())
+	if e != nil {
+		log.Printf("No Meeting file; %s\n", e.Error())
 		return entity.NewMeetings()
 	}
-	ms, err := entity.DeserializeMeeting(file)
+	ms, e := entity.DeserializeMeeting(file)
 	return ms
 }
 
@@ -69,15 +72,19 @@ func validPassword(u *entity.User, pass string) bool {
 func LoadLogin(users entity.Users) (*entity.User, err.Err) {
 	l := loadLoginFile()
 	if l == nil {
+		log.Println("Login file not found, not logged in")
 		return nil, err.OK
 	}
 	u := users.Lookup(l.Username)
 	if u == nil {
+		log.Printf("Login user not found: %s\n", l.Username)
 		return nil, err.NoSuchUser
 	}
 	if !validPassword(u, l.Password) {
+		log.Printf("Login password invalid? %s:%s\n", l.Username, l.Password)
 		return nil, err.InconsistentState
 	}
+	log.Printf("Login loaded: %s:%s\n", l.Username, l.Password)
 	return u, err.OK
 }
 
@@ -92,12 +99,15 @@ func Logout() bool {
 func Login(users entity.Users, user, pass string) err.Err {
 	u := users.Lookup(user)
 	if u == nil {
+		log.Printf("No user named: %s\n", user)
 		return err.NoSuchUser
 	}
 	if validPassword(u, pass) {
 		writeLoginFile(user, pass)
+		log.Printf("Login success")
 		return err.OK
 	}
+	log.Printf("Invalid password for user: %s\n", user)
 	return err.AuthenticateFail
 }
 
@@ -109,7 +119,7 @@ func StoreUser(users entity.Users) {
 }
 
 // StoreMeeting to MeetingFile
-func StoreMeeting(meetings entity.Meetings) {
+func StoreMeeting(meetings *entity.Meetings) {
 	file, e := openFileRewrite(MeetingFile())
 	err.LogFatalIfError(e)
 	meetings.Serialize(file)

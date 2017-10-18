@@ -34,6 +34,11 @@ const (
 	InconsistentState Err = 8
 	// AuthenticateFail happens when username and password mismatch
 	AuthenticateFail Err = 9
+	// WrongLoginState happens when doing something required to login while not
+	// logging in and vice versa
+	WrongLoginState Err = 10
+	// NotEnoughPrivilege happens when doing some action beyond his privilege
+	NotEnoughPrivilege Err = 11
 )
 
 // LogFatalIfError ..

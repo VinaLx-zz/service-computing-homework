@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"err"
 	"io"
+	"log"
 	"time"
 )
 
@@ -28,6 +29,11 @@ func NewMeetings() *Meetings {
 		meetings: make(map[string]*Meeting),
 		relation: make(map[string]map[string]*Meeting),
 	}
+}
+
+// Lookup find the meeting with specific title
+func (ms *Meetings) Lookup(title string) *Meeting {
+	return ms.meetings[title]
 }
 
 // Slice returns the array of all meetings in Meetings
@@ -88,7 +94,7 @@ func (ms *Meetings) Host(m *Meeting) err.Err {
 	for _, u := range m.Participants {
 		for _, um := range ms.Related(u.Username) {
 			if overlapped(m.Start, m.End, um.Start, um.End) {
-				return err.InvalidTime
+				return err.TimeConflict
 			}
 		}
 	}
@@ -122,6 +128,16 @@ func (ms *Meetings) CancelAll(host *User) {
 	}
 }
 
+func (ms *Meetings) remove(m *Meeting, user *User) {
+	m.Participants.Remove(user)
+	if user.Username != m.Host.Username || m.Participants.Size() == 0 {
+		delete(ms.relation[user.Username], m.Title)
+	}
+	if m.Participants.Size() == 0 {
+		delete(ms.meetings, m.Title)
+	}
+}
+
 // Remove remove user from specific meeting and returns OK if success
 // NoSuchUser or NoSuchMeeting when error
 func (ms *Meetings) Remove(title string, user *User) err.Err {
@@ -129,11 +145,22 @@ func (ms *Meetings) Remove(title string, user *User) err.Err {
 	if m == nil {
 		return err.NoSuchMeeting
 	}
-	if m.Participants.Remove(user) == nil {
+	if m.Participants.Lookup(user.Username) == nil {
 		return err.NoSuchUser
 	}
-	if user.Username != m.Host.Username {
-		delete(ms.relation[user.Username], m.Title)
+	ms.remove(m, user)
+	return err.OK
+}
+
+// RemoveAll removes the user from all the meeting
+func (ms *Meetings) RemoveAll(user *User) err.Err {
+	ms.CancelAll(user)
+	related := make([]*Meeting, 0)
+	for _, m := range ms.Related(user.Username) {
+		related = append(related, m)
+	}
+	for _, m := range related {
+		ms.remove(m, user)
 	}
 	return err.OK
 }
@@ -175,6 +202,7 @@ func DeserializeMeeting(r io.Reader) (*Meetings, error) {
 		if err := decoder.Decode(m); err == io.EOF {
 			return ms, nil
 		} else if err != nil {
+			log.Println(err.Error())
 			return nil, err
 		}
 		ms.host(m)

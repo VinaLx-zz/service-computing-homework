@@ -33,3 +33,8 @@ func UserFile() string {
 func MeetingFile() string {
 	return AgendaDir() + "meeting"
 }
+
+// LogFile path
+func LogFile() string {
+	return AgendaDir() + "log"
+}

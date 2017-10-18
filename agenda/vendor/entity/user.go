@@ -3,6 +3,7 @@ package entity
 import (
 	"encoding/json"
 	"io"
+	"log"
 )
 
 // User struct
@@ -27,6 +28,11 @@ func NewUsers() Users {
 // nil if not found
 func (users Users) Lookup(username string) *User {
 	return users[username]
+}
+
+// Size returns the number of user in the set
+func (users Users) Size() int {
+	return len(users)
 }
 
 // Add returns false if there's already a user with the same username in map
@@ -82,6 +88,7 @@ func DeserializeUser(r io.Reader) (Users, error) {
 		if err := decoder.Decode(u); err == io.EOF {
 			return users, nil
 		} else if err != nil {
+			log.Println(err.Error())
 			return nil, err
 		}
 		users.Add(u)
