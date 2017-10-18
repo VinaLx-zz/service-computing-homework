@@ -1,7 +1,9 @@
 package entity
 
 import (
+	"encoding/json"
 	"err"
+	"io"
 	"time"
 )
 
@@ -18,6 +20,14 @@ type Meeting struct {
 type Meetings struct {
 	meetings map[string]*Meeting
 	relation map[string]map[string]*Meeting
+}
+
+// NewMeetings returns an empty meeting set
+func NewMeetings() *Meetings {
+	return &Meetings{
+		meetings: make(map[string]*Meeting),
+		relation: make(map[string]map[string]*Meeting),
+	}
 }
 
 // Slice returns the array of all meetings in Meetings
@@ -62,34 +72,27 @@ func (ms *Meetings) host(m *Meeting) {
 	for _, u := range m.Participants {
 		ms.addRelatedMeeting(u, m)
 	}
+	ms.addRelatedMeeting(m.Host, m)
 }
 
 // Host create a meeting in meetings if all constraints are satisfied:
 // title shouldn't be duplicate
 // all user including host should have time
-func (ms *Meetings) Host(
-	title string, host *User, other Users, start, end time.Time) err.Err {
-	if !end.After(start) {
+func (ms *Meetings) Host(m *Meeting) err.Err {
+	if !m.End.After(m.Start) {
 		return err.InvalidTime
 	}
-	if ms.Has(title) {
+	if ms.Has(m.Title) {
 		return err.DuplicateMeeting
 	}
-	other.Add(host)
-	for _, u := range other {
-		for _, m := range ms.Related(u.Username) {
-			if overlapped(m.Start, m.End, start, end) {
+	for _, u := range m.Participants {
+		for _, um := range ms.Related(u.Username) {
+			if overlapped(m.Start, m.End, um.Start, um.End) {
 				return err.InvalidTime
 			}
 		}
 	}
-	ms.host(&Meeting{
-		Title:        title,
-		Host:         host,
-		Participants: other,
-		Start:        start,
-		End:          end,
-	})
+	ms.host(m)
 	return err.OK
 }
 
@@ -152,4 +155,28 @@ func (ms *Meetings) Add(title string, user *User) err.Err {
 	m.Participants.Add(user)
 	ms.addRelatedMeeting(user, m)
 	return err.OK
+}
+
+// Serialize meetings to specific writer
+func (ms *Meetings) Serialize(w io.Writer) {
+	encoder := json.NewEncoder(w)
+	for _, m := range ms.meetings {
+		encoder.Encode(m)
+	}
+}
+
+// DeserializeMeeting restore meetings from the reader in the format of
+// the serialization
+func DeserializeMeeting(r io.Reader) (*Meetings, error) {
+	decoder := json.NewDecoder(r)
+	ms := NewMeetings()
+	for {
+		m := new(Meeting)
+		if err := decoder.Decode(m); err == io.EOF {
+			return ms, nil
+		} else if err != nil {
+			return nil, err
+		}
+		ms.host(m)
+	}
 }
