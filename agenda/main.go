@@ -16,7 +16,14 @@ package main
 
 import (
 	"cli"
+	"log"
+	"model"
 )
+
+func init() {
+	log.SetFlags(log.Lshortfile)
+	model.EnsureAgendaDir()
+}
 
 func main() {
 	cli.Execute()
