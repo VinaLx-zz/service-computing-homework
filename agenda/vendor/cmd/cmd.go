@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"crypto/md5"
 	"entity"
 	"err"
 	"fmt"
@@ -48,6 +49,23 @@ func loadLogin(us entity.Users) *entity.User {
 	}
 	log.Fatalf("something wrong with login file, error: %d", int(e))
 	return nil
+}
+
+// Register a user
+func Register(user, pass, mail, phone string) int {
+	users := model.LoadUsers()
+	passhash := string(md5.New().Sum([]byte(pass)))
+	if !users.Add(&entity.User{
+		Username: user,
+		Password: passhash,
+		Mail:     mail,
+		Phone:    phone,
+	}) {
+		fmt.Fprintf(os.Stderr, "there's another user with username %s\n", user)
+		return int(err.DuplicateUser)
+	}
+	model.StoreUser(users)
+	return 0
 }
 
 // Login Command
