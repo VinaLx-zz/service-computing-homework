@@ -1,5 +1,9 @@
 package err
 
+import (
+	"log"
+)
+
 // Err is the error code used in the agenda
 type Err int
 
@@ -23,4 +27,18 @@ const (
 	DuplicateUser Err = 5
 	// InvalidTime happens when there're some error with time
 	InvalidTime Err = 6
+	// NoSuchFile happens when the expected file of some operation doesn't exist
+	NoSuchFile Err = 7
+	// InconsistentState happens when expected state shouldn't be reached,
+	// e.g. Meetings and Users after deserializing from file doesn't match
+	InconsistentState Err = 8
+	// AuthenticateFail happens when username and password mismatch
+	AuthenticateFail Err = 9
 )
+
+// LogFatalIfError ..
+func LogFatalIfError(e error) {
+	if e != nil {
+		log.Fatal(e.Error())
+	}
+}
