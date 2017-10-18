@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"entity"
 	"err"
+	"fmt"
 	"log"
 	"os"
 )
@@ -63,7 +64,9 @@ func writeLoginFile(user, pass string) {
 }
 
 func validPassword(u *entity.User, pass string) bool {
-	return string(md5.New().Sum([]byte(pass))) == u.Password
+	hash := fmt.Sprintf("%x", md5.Sum([]byte(pass)))
+	log.Printf("pass attempt '%s': '%s', to '%s'", pass, hash, u.Password)
+	return hash == u.Password
 }
 
 // LoadLogin file to get current login user

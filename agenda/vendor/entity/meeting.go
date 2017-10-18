@@ -61,7 +61,7 @@ func (ms *Meetings) Related(user string) map[string]*Meeting {
 }
 
 func overlapped(s1, e1, s2, e2 time.Time) bool {
-	return e1.After(s1) && s1.Before(e2)
+	return e1.After(s2) && s1.Before(e2)
 }
 
 func (ms *Meetings) addRelatedMeeting(u *User, m *Meeting) {
@@ -94,6 +94,9 @@ func (ms *Meetings) Host(m *Meeting) err.Err {
 	for _, u := range m.Participants {
 		for _, um := range ms.Related(u.Username) {
 			if overlapped(m.Start, m.End, um.Start, um.End) {
+				log.Printf(
+					"time conflict for '%s': %s to %s\n", u.Username,
+					um.Start.Format("2006-01-02"), um.End.Format("2006-01-02"))
 				return err.TimeConflict
 			}
 		}

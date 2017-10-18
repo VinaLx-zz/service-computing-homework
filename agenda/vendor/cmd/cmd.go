@@ -8,6 +8,7 @@ import (
 	"log"
 	"model"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -54,7 +55,8 @@ func loadLogin(us entity.Users) *entity.User {
 // Register a user
 func Register(user, pass, mail, phone string) int {
 	users := model.LoadUsers()
-	passhash := string(md5.New().Sum([]byte(pass)))
+	passhash := fmt.Sprintf("%x", md5.Sum([]byte(pass)))
+	log.Printf("password hash for '%s': %s\n", pass, passhash)
 	if !users.Add(&entity.User{
 		Username: user,
 		Password: passhash,
@@ -75,7 +77,7 @@ func Login(user, pass string) int {
 		return printWrongLoginState("login", false)
 	}
 	if model.Login(users, user, pass) != err.OK {
-		fmt.Fprintf(os.Stderr, "Authentication Fail")
+		fmt.Fprintln(os.Stderr, "Authentication Fail")
 		return int(err.AuthenticateFail)
 	}
 	return 0
@@ -84,7 +86,7 @@ func Login(user, pass string) int {
 // Logout Command
 func Logout() int {
 	if model.Logout() {
-		fmt.Printf("logout success")
+		fmt.Printf("logout success\n")
 	} else {
 		return printWrongLoginState("logout", true)
 	}
@@ -99,7 +101,7 @@ func ShowUsers() int {
 	}
 	fmt.Println("Username Email Phone")
 	for _, u := range users {
-		fmt.Printf("'%s' '%s' '%s'", u.Username, u.Mail, u.Phone)
+		fmt.Printf("'%s' '%s' '%s'\n", u.Username, u.Mail, u.Phone)
 	}
 	return 0
 }
@@ -121,7 +123,7 @@ func DeleteUser() int {
 	return 0
 }
 
-const timeLayout = "2017-12-24"
+const timeLayout = "2006-01-02"
 
 func hostMeeting(ms *entity.Meetings, m *entity.Meeting) int {
 	e := ms.Host(m)
@@ -134,7 +136,7 @@ func hostMeeting(ms *entity.Meetings, m *entity.Meeting) int {
 		fmt.Fprintln(os.Stderr, "there are time conflict of some participants")
 	case err.OK:
 		model.StoreMeeting(ms)
-		fmt.Printf("meeting hosted")
+		fmt.Println("meeting hosted")
 	}
 	return int(e)
 }
@@ -292,10 +294,14 @@ func ClearMeetings() int {
 }
 
 func printMeeting(m *entity.Meeting) {
-	fmt.Printf("title: %s\n\thost: %s\ttime: %s - %s\n\tparticipants: %v",
-		m.Title, m.Host,
+	parts := make([]string, 0)
+	for _, u := range m.Participants {
+		parts = append(parts, u.Username)
+	}
+	fmt.Printf("title: %s\n\thost: %s\n\ttime: %s to %s\n\tparticipants: %s\n",
+		m.Title, m.Host.Username,
 		m.Start.Format(timeLayout), m.End.Format(timeLayout),
-		m.Participants.Slice())
+		strings.Join(parts, ", "))
 }
 
 // QueryMeeting overlapped with specific time interval
