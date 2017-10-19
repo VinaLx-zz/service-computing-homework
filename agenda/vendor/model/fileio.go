@@ -28,13 +28,13 @@ func LoadUsers() entity.Users {
 }
 
 // LoadMeetings from Meeting
-func LoadMeetings() *entity.Meetings {
+func LoadMeetings(users entity.Users) *entity.Meetings {
 	file, e := os.Open(MeetingFile())
 	if e != nil {
 		log.Printf("No Meeting file; %s\n", e.Error())
 		return entity.NewMeetings()
 	}
-	ms, e := entity.DeserializeMeeting(file)
+	ms, e := entity.DeserializeMeeting(file, users)
 	return ms
 }
 

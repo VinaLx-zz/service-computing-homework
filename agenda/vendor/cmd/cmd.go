@@ -115,7 +115,7 @@ func DeleteUser() int {
 	if users.Remove(u) == nil {
 		log.Fatalln("Login user cannot be removed !?")
 	}
-	meetings := model.LoadMeetings()
+	meetings := model.LoadMeetings(users)
 	meetings.RemoveAll(u)
 	model.StoreMeeting(meetings)
 	model.StoreUser(users)
@@ -168,7 +168,7 @@ func HostMeeting(title string, parts []string, start, end string) int {
 		Start:        s,
 		End:          e,
 	}
-	meetings := model.LoadMeetings()
+	meetings := model.LoadMeetings(users)
 	return hostMeeting(meetings, meeting)
 }
 
@@ -179,7 +179,7 @@ func CancelMeeting(title string) int {
 	if host == nil {
 		return printWrongLoginState("CancelMeeting", true)
 	}
-	meetings := model.LoadMeetings()
+	meetings := model.LoadMeetings(users)
 	meeting := meetings.Lookup(title)
 	if meeting == nil {
 		return printMeetingDoesntExist(title)
@@ -195,7 +195,7 @@ func CancelMeeting(title string) int {
 // QuitMeeting of specific title of the login user
 func QuitMeeting(title string) int {
 	users := model.LoadUsers()
-	meetings := model.LoadMeetings()
+	meetings := model.LoadMeetings(users)
 	user := loadLogin(users)
 	e := meetings.Remove(title, user)
 	switch e {
@@ -214,7 +214,7 @@ func QuitMeeting(title string) int {
 // AddParticipant add user to the hosted meeting
 func AddParticipant(title string, username string) int {
 	users := model.LoadUsers()
-	meetings := model.LoadMeetings()
+	meetings := model.LoadMeetings(users)
 	host := loadLogin(users)
 	if host == nil {
 		return printWrongLoginState("AddParticipant", true)
@@ -257,7 +257,7 @@ func RemoveParticipant(title string, username string) int {
 	if host == nil {
 		return printWrongLoginState("RemoveParticipant", true)
 	}
-	meetings := model.LoadMeetings()
+	meetings := model.LoadMeetings(users)
 	meeting := meetings.Lookup(title)
 	if meeting == nil {
 		return printMeetingDoesntExist(title)
@@ -284,7 +284,7 @@ func ClearMeetings() int {
 	if host == nil {
 		return printWrongLoginState("ClearMeeting", true)
 	}
-	meetings := model.LoadMeetings()
+	meetings := model.LoadMeetings(users)
 	meetings.CancelAll(host)
 	model.StoreMeeting(meetings)
 	return 0
@@ -320,7 +320,7 @@ func QueryMeeting(start, end string) int {
 		util.PrintfErr("invalid interval %s - %s", start, end)
 		return int(err.InvalidTime)
 	}
-	meetings := model.LoadMeetings()
+	meetings := model.LoadMeetings(users)
 	for _, m := range meetings.Related(user.Username) {
 		if e.After(m.Start) && s.Before(m.End) {
 			printMeeting(m)

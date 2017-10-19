@@ -18,6 +18,14 @@ type Meeting struct {
 	End          time.Time
 }
 
+type meetingSerialized struct {
+	Title        string
+	Host         string
+	Participants []string
+	Start        string
+	End          string
+}
+
 // Meetings can hold meetings that logically existable
 type Meetings struct {
 	meetings map[string]*Meeting
@@ -188,23 +196,55 @@ func (ms *Meetings) Add(title string, user *User) err.Err {
 func (ms *Meetings) Serialize(w io.Writer) {
 	encoder := json.NewEncoder(w)
 	for _, m := range ms.meetings {
-		encoder.Encode(m)
+		encoder.Encode(toSerialized(m))
+	}
+}
+
+func toSerialized(m *Meeting) *meetingSerialized {
+	parts := make([]string, 0, len(m.Participants))
+	for name := range m.Participants {
+		parts = append(parts, name)
+	}
+	return &meetingSerialized{
+		Title:        m.Title,
+		Host:         m.Host.Username,
+		Participants: parts,
+		Start:        util.YMDFormat(m.Start),
+		End:          util.YMDFormat(m.End),
+	}
+}
+
+func fromSerialized(m *meetingSerialized, users Users) *Meeting {
+	start, _ := util.YMDParse(m.Start)
+	end, _ := util.YMDParse(m.End)
+	host := users.Lookup(m.Host)
+	parts := NewUsers()
+	for _, p := range m.Participants {
+		u := users.Lookup(p)
+		parts.Add(u)
+	}
+	return &Meeting{
+		Host:         host,
+		Start:        start,
+		End:          end,
+		Participants: parts,
+		Title:        m.Title,
 	}
 }
 
 // DeserializeMeeting restore meetings from the reader in the format of
 // the serialization
-func DeserializeMeeting(r io.Reader) (*Meetings, error) {
+func DeserializeMeeting(r io.Reader, users Users) (*Meetings, error) {
 	decoder := json.NewDecoder(r)
 	ms := NewMeetings()
 	for {
-		m := new(Meeting)
+		m := new(meetingSerialized)
 		if err := decoder.Decode(m); err == io.EOF {
 			return ms, nil
 		} else if err != nil {
 			log.Println(err.Error())
 			return nil, err
 		}
-		ms.host(m)
+		ms.host(fromSerialized(m, users))
 	}
 }
