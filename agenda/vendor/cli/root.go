@@ -16,6 +16,8 @@ package cli
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
 	"os"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -29,13 +31,10 @@ var debug bool
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
 	Use:   "Agenda",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "A CLI meeting manager",
+	Long: `Agenda is a meeting manager based on CLI using cobra library.
+It supports different operation on meetings including register, create meeting, query and so on.
+It's a cooperation homework assignment for service computing.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	//	Run: func(cmd *cobra.Command, args []string) { },
@@ -50,7 +49,7 @@ func Execute() {
 	}
 }
 
-func init() { 
+func init() {
 	cobra.OnInitialize(initConfig)
 
 	RootCmd.PersistentFlags().BoolP("debug", "d", false, "display log message")
@@ -63,14 +62,16 @@ func init() {
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	
+
 	// RootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
 	debug, _ = RootCmd.Flags().GetBool("debug")
-
+	if !debug {
+		log.SetOutput(ioutil.Discard)
+	}
 
 	if cfgFile != "" {
 		// Use config file from the flag.
