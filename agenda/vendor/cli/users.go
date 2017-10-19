@@ -19,6 +19,7 @@ import (
 	"cmd"
 )
 
+
 // registerCmd represents the register command
 var registerCmd = &cobra.Command{
 	Use:   "register",
@@ -26,9 +27,17 @@ var registerCmd = &cobra.Command{
 	Long: `You need to provide username and password to register, and the username can't be the same as others.`,
 	Run: func(com *cobra.Command, args []string) {
 		username, _ := com.Flags().GetString("user")
+		checkEmpty("username", username)
+
 		password, _ := com.Flags().GetString("password")
+		checkEmpty("password", password)
+
 		mail, _ := com.Flags().GetString("mail")
+		checkEmpty("mail", mail)
+
 		phone, _ := com.Flags().GetString("phone")
+		checkEmpty("phone", phone)
+
 		cmd.Register(username, password, mail, phone)
 	},
 }
@@ -39,7 +48,11 @@ var loginCmd = &cobra.Command{
 	Long: ``,
 	Run: func(com *cobra.Command, args []string) {
 		username, _ := com.Flags().GetString("user")
+		checkEmpty("username", username)
+
 		password, _ := com.Flags().GetString("password")
+		checkEmpty("password", password)
+
 		cmd.Login(username, password)
 	},
 }
@@ -79,9 +92,9 @@ to quickly create a Cobra application.`,
 
 func init() {
 	registerCmd.Flags().StringP("user", "u", "", "Username")
-	registerCmd.Flags().StringP("password", "w", "", "Help message for username")
+	registerCmd.Flags().StringP("password", "p", "", "Help message for username")
 	registerCmd.Flags().StringP("mail", "m", "", "email.")
-	registerCmd.Flags().StringP("phone", "p", "", "Phone")
+	registerCmd.Flags().StringP("phone", "t", "", "Phone")
 
 	loginCmd.Flags().StringP("user", "u", "", "Input username")
 	loginCmd.Flags().StringP("password", "p", "", "Input password")
