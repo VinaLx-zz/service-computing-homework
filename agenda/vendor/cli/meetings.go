@@ -29,10 +29,18 @@ var createMeetingsCmd = &cobra.Command{
 		start time as the format of (yyyy-mm-dd), and end time as the format of (yyyy-mm-dd).`,
 	Run: func(comd *cobra.Command, args []string) {
 		title, _ := comd.Flags().GetString("title")
+		checkEmpty("title", title)
+		
 		participatorStr, _ := comd.Flags().GetString("participators")
+		checkEmpty("participators", participatorStr)
 		participators := strings.Split(participatorStr, " ")
+		
 		startTime, _ := comd.Flags().GetString("start")
+		checkEmpty("Start Time", startTime)
+
 		endTime, _ := comd.Flags().GetString("end")
+		checkEmpty("End Time", endTime)
+
 		cmd.HostMeeting(title, participators, startTime, endTime)
 	},
 }
@@ -44,8 +52,12 @@ var changeParticipatorsCmd = &cobra.Command{
 	by specifying the title name.`,
 	Run: func(comd *cobra.Command, args []string) {
 		title, _ := comd.Flags().GetString("title")
+		checkEmpty("title", title)
+
 		participatorStr, _ := comd.Flags().GetString("participators")
+		checkEmpty("participators", participatorStr)
 		participators := strings.Split(participatorStr, " ")
+		
 		deleteOrNot, _ := comd.Flags().GetBool("delete")
 		if deleteOrNot {
 			var error int
@@ -74,7 +86,11 @@ var listMeetingsCmd = &cobra.Command{
 	which you attended, during a time interval.`,
 	Run: func(comd *cobra.Command, args []string) {
 		startTime, _ := comd.Flags().GetString("start")
+		checkEmpty("Start Time", startTime)
+
 		endTime, _ := comd.Flags().GetString("end")
+		checkEmpty("End Time", endTime)
+
 		cmd.QueryMeeting(startTime, endTime)
 	},
 }
@@ -85,6 +101,8 @@ var cancelCmd = &cobra.Command{
 	Long: `Using this command, you are able to cancel the meetings, which are created by you.`,
 	Run: func(comd *cobra.Command, args []string) {
 		title, _ := comd.Flags().GetString("title")
+		checkEmpty("Title", title)
+
 		cmd.CancelMeeting(title)
 	},
 }
@@ -95,6 +113,8 @@ var quitCmd = &cobra.Command{
 	Long: `You can quit any meetings you want, which are you attended, not created.`,
 	Run: func(comd *cobra.Command, args []string) {
 		title, _ := comd.Flags().GetString("title")
+		checkEmpty("Title", title)
+
 		cmd.QuitMeeting(title)
 	},
 }
