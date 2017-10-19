@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"crypto/md5"
 	"entity"
 	"err"
 	"fmt"
@@ -9,7 +8,7 @@ import (
 	"model"
 	"os"
 	"strings"
-	"time"
+	"util"
 )
 
 func printWrongLoginState(action string, required bool) int {
@@ -19,27 +18,27 @@ func printWrongLoginState(action string, required bool) int {
 	} else {
 		s = "logout"
 	}
-	fmt.Fprintf(os.Stderr, "Action %s requires an %s state\n", action, s)
+	util.PrintfErr("Action %s requires an %s state\n", action, s)
 	return int(err.WrongLoginState)
 }
 
 func printMeetingDoesntExist(title string) int {
-	fmt.Fprintf(os.Stderr, "meeting doesn't exist: %s\n", title)
+	util.PrintfErr("meeting doesn't exist: %s\n", title)
 	return int(err.NoSuchMeeting)
 }
 
 func printNotAHost(title string, user string) int {
-	fmt.Fprintf(os.Stderr, "meeting '%s' is not hosted by '%s'", title, user)
+	util.PrintfErr("meeting '%s' is not hosted by '%s'", title, user)
 	return int(err.NotEnoughPrivilege)
 }
 
 func printUserDoesntExist(username string) int {
-	fmt.Fprintf(os.Stderr, "user doesn't exist: %s\n", username)
+	util.PrintfErr("user doesn't exist: %s\n", username)
 	return int(err.NoSuchUser)
 }
 
 func printInvalidTimeFormat(time string) int {
-	fmt.Fprintf(os.Stderr, "invalid time format: %s\n", time)
+	util.PrintfErr("invalid time format: %s\n", time)
 	return int(err.InvalidTime)
 }
 
@@ -55,7 +54,7 @@ func loadLogin(us entity.Users) *entity.User {
 // Register a user
 func Register(user, pass, mail, phone string) int {
 	users := model.LoadUsers()
-	passhash := fmt.Sprintf("%x", md5.Sum([]byte(pass)))
+	passhash := util.PrettyHash(pass)
 	log.Printf("password hash for '%s': %s\n", pass, passhash)
 	if !users.Add(&entity.User{
 		Username: user,
@@ -63,7 +62,7 @@ func Register(user, pass, mail, phone string) int {
 		Mail:     mail,
 		Phone:    phone,
 	}) {
-		fmt.Fprintf(os.Stderr, "there's another user with username %s\n", user)
+		util.PrintfErr("there's another user with username %s\n", user)
 		return int(err.DuplicateUser)
 	}
 	model.StoreUser(users)
@@ -77,7 +76,7 @@ func Login(user, pass string) int {
 		return printWrongLoginState("login", false)
 	}
 	if model.Login(users, user, pass) != err.OK {
-		fmt.Fprintln(os.Stderr, "Authentication Fail")
+		util.PrintlnErr("Authentication Fail")
 		return int(err.AuthenticateFail)
 	}
 	return 0
@@ -123,17 +122,15 @@ func DeleteUser() int {
 	return 0
 }
 
-const timeLayout = "2006-01-02"
-
 func hostMeeting(ms *entity.Meetings, m *entity.Meeting) int {
 	e := ms.Host(m)
 	switch e {
 	case err.InvalidTime:
-		fmt.Fprintln(os.Stderr, "meeting should end later than start")
+		util.PrintlnErr("meeting should end later than start")
 	case err.DuplicateMeeting:
-		fmt.Fprintf(os.Stderr, "there's another meeting with title: %s\n", m.Title)
+		util.PrintfErr("there's another meeting with title: %s\n", m.Title)
 	case err.TimeConflict:
-		fmt.Fprintln(os.Stderr, "there are time conflict of some participants")
+		util.PrintlnErr("there are time conflict of some participants")
 	case err.OK:
 		model.StoreMeeting(ms)
 		fmt.Println("meeting hosted")
@@ -148,11 +145,11 @@ func HostMeeting(title string, parts []string, start, end string) int {
 	if host == nil {
 		return printWrongLoginState("HostMeeting", true)
 	}
-	s, es := time.Parse(timeLayout, start)
+	s, es := util.YMDParse(start)
 	if es != nil {
 		return printInvalidTimeFormat(start)
 	}
-	e, ee := time.Parse(timeLayout, end)
+	e, ee := util.YMDParse(end)
 	if ee != nil {
 		return printInvalidTimeFormat(end)
 	}
@@ -300,7 +297,7 @@ func printMeeting(m *entity.Meeting) {
 	}
 	fmt.Printf("title: %s\n\thost: %s\n\ttime: %s to %s\n\tparticipants: %s\n",
 		m.Title, m.Host.Username,
-		m.Start.Format(timeLayout), m.End.Format(timeLayout),
+		util.YMDFormat(m.Start), util.YMDFormat(m.End),
 		strings.Join(parts, ", "))
 }
 
@@ -311,16 +308,16 @@ func QueryMeeting(start, end string) int {
 	if user == nil {
 		return printWrongLoginState("QueryMeeting", true)
 	}
-	s, es := time.Parse(timeLayout, start)
+	s, es := util.YMDParse(start)
 	if es != nil {
 		return printInvalidTimeFormat(start)
 	}
-	e, ee := time.Parse(timeLayout, end)
+	e, ee := util.YMDParse(end)
 	if ee != nil {
 		return printInvalidTimeFormat(end)
 	}
 	if e.Before(s) {
-		fmt.Fprintf(os.Stderr, "invalid interval %s - %s", start, end)
+		util.PrintfErr("invalid interval %s - %s", start, end)
 		return int(err.InvalidTime)
 	}
 	meetings := model.LoadMeetings()

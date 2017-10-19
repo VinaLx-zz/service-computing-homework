@@ -1,13 +1,12 @@
 package model
 
 import (
-	"crypto/md5"
 	"encoding/json"
 	"entity"
 	"err"
-	"fmt"
 	"log"
 	"os"
+	"util"
 )
 
 func openFileRewrite(path string) (*os.File, error) {
@@ -64,7 +63,7 @@ func writeLoginFile(user, pass string) {
 }
 
 func validPassword(u *entity.User, pass string) bool {
-	hash := fmt.Sprintf("%x", md5.Sum([]byte(pass)))
+	hash := util.PrettyHash(pass)
 	log.Printf("pass attempt '%s': '%s', to '%s'", pass, hash, u.Password)
 	return hash == u.Password
 }

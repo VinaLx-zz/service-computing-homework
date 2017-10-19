@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"time"
+	"util"
 )
 
 // Meeting struct
@@ -60,10 +61,6 @@ func (ms *Meetings) Related(user string) map[string]*Meeting {
 	return related
 }
 
-func overlapped(s1, e1, s2, e2 time.Time) bool {
-	return e1.After(s2) && s1.Before(e2)
-}
-
 func (ms *Meetings) addRelatedMeeting(u *User, m *Meeting) {
 	meetings := ms.relation[u.Username]
 	if meetings == nil {
@@ -93,10 +90,10 @@ func (ms *Meetings) Host(m *Meeting) err.Err {
 	}
 	for _, u := range m.Participants {
 		for _, um := range ms.Related(u.Username) {
-			if overlapped(m.Start, m.End, um.Start, um.End) {
+			if util.Overlapped(m.Start, m.End, um.Start, um.End) {
 				log.Printf(
 					"time conflict for '%s': %s to %s\n", u.Username,
-					um.Start.Format("2006-01-02"), um.End.Format("2006-01-02"))
+					util.YMDFormat(um.Start), util.YMDFormat(um.End))
 				return err.TimeConflict
 			}
 		}
@@ -178,7 +175,7 @@ func (ms *Meetings) Add(title string, user *User) err.Err {
 		return err.DuplicateUser
 	}
 	for _, um := range ms.Related(user.Username) {
-		if overlapped(um.Start, um.End, m.Start, m.End) {
+		if util.Overlapped(um.Start, um.End, m.Start, m.End) {
 			return err.TimeConflict
 		}
 	}
