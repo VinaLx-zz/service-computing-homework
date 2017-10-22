@@ -5,6 +5,7 @@ Agenda is a command line meeting manager.
 ## Collaborators
 
 15331344 薛明淇
+15331348 颜泽鑫
 `TODO`
 
 ## Usage
@@ -64,7 +65,112 @@ There should be a seperate part for validation for user input parameters and oth
 
 ### Command Line Interface Using Cobra
 
-TODO
+#### Global argument
+
+```
+-h, --help
+-d, --debug
+```
+You can get helpful information whenever you are using Cobar. And you can get detailed log information when using -d.
+
+#### Main Command
+We implement the following command for you to use.
+
+```
+Available Commands:
+  cancel              Cancel your own meeting by specifying title name.
+  changeParticipators Change your own meetings' participators.
+  clear               Clear all meetings you attended or created.
+  createMeetings      Create meetings.
+  delete              A brief description of your command
+  help                Help about any command
+  list                
+  listMeetingsCmd     List all of your own meetings during a time interval.
+  login               Login
+  logout              Logout
+  quit                Quit meetings.
+  register            Register user.
+```
+
+#### register
+You can register an account by using `register` command, and we define the following requisite argument. All of them are type of `string`.
+
+```
+Flags:
+  -m, --mail string       email.
+  -p, --password string   Help message for username
+  -t, --phone string      Phone
+  -u, --user string       Username
+```
+
+#### Login
+You need to login before you use the most of command in `Agenda`. Once you login, you don't have to login next time, we will keep your state. But you have to log out by yourself in order to protect your privacy. 
+
+```
+Flags:
+  -p, --password string   Input password
+  -u, --user string       Input username
+```
+
+#### Logout
+No argument is needed here. When you have nothing else to do, you had better log out in order to protect your privacy.
+
+#### delete
+We are sorry when you use `delete`. Once you use this command, all of the information about you will be erased, and there is no way for us and you to get it back. So we recommend you not to use it.
+
+#### List
+No argument is needed here. You can get all users' information except password so that you can invite others to join your meetings.
+
+
+#### Create Meetings
+After you have login, you can create a meeting by using `createMeetings` command. All of the arguments are required. You should invite at least one participator to join your meeting. After all, you can't have a meeting only with yourself. :P
+
+```
+Flags:
+  -e, --end string             Input end time as the format of (yyyy-mm-dd).
+  -p, --participators string   Input participator name.
+  -s, --start string           Input start time as the format of (yyyy-mm-dd).
+  -t, --title string           Input title name.
+```
+
+#### List Meetings
+You can using `listMeetings` to get all of the meetings' information during the specific interval(start - end).
+
+```
+Flags:
+  -e, --end string     Input the end time.(yyyy-mm-dd)
+  -s, --start string   Input the start time.(yyyy-mm-dd)
+```
+
+#### Change Participators
+Whenever you need to invite or remove the participators of your meetings, you can using `changeParticipators`. But you have to ensure that he or she are available to attend your meeting.
+
+```
+Flags:
+  -y, --delete                 If true, delete participators, otherwise append participators.
+  -p, --participators string   Input the participators.
+  -t, --title string           Input the title name.
+```
+
+#### Cancel
+You may make some mistakes when creating a meeting, then you can just cancel it.
+
+```
+Flags:
+  -t, --title string   Input the title.
+```
+
+#### Quit
+You can refuse to attend a meeting by using `quit`, then you can be free to go out for a play.
+
+```
+Flags:
+  -t, --title string   Input the title.
+```
+
+#### clear Meetings
+You may feel busy and boring for attending meetings. At that moment, you can use `clear` to cancel all of the meeting which you attended and quit all of the meetings which you are invited. That's you are free!!!
+
 
 ### Entity Logic
 
@@ -91,3 +197,4 @@ After the implementation of other parts, implementing business logic is straight
 ## Last
 
 I did have some fun here :P
+

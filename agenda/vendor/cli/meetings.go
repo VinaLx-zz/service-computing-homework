@@ -80,7 +80,7 @@ var changeParticipatorsCmd = &cobra.Command{
 }
 
 var listMeetingsCmd = &cobra.Command{
-	Use: "listMeetingsCmd",
+	Use: "listMeetings",
 	Short: "List all of your own meetings during a time interval.",
 	Long: `You can see the detail information of all of meetings,
 	which you attended, during a time interval.`,
@@ -135,12 +135,12 @@ func init() {
 	createMeetingsCmd.Flags().StringP("start", "s", "", "Input start time as the format of (yyyy-mm-dd).")
 	createMeetingsCmd.Flags().StringP("end", "e", "", "Input end time as the format of (yyyy-mm-dd).")
 
-	changeParticipatorsCmd.Flags().BoolP("delete", "d", false, "If true, delete participators, otherwise append participators.")
+	changeParticipatorsCmd.Flags().BoolP("delete", "y", false, "If true, delete participators, otherwise append participators.")
 	changeParticipatorsCmd.Flags().StringP("title", "t", "", "Input the title name.")
 	changeParticipatorsCmd.Flags().StringP("participators", "p", "", "Input the participators.")
 
-	listMeetingsCmd.Flags().StringP("start", "s", "", "Input the start time.")
-	listMeetingsCmd.Flags().StringP("end", "e", "", "Input the end time.")
+	listMeetingsCmd.Flags().StringP("start", "s", "", "Input the start time.(yyyy-mm-dd)")
+	listMeetingsCmd.Flags().StringP("end", "e", "", "Input the end time.(yyyy-mm-dd)")
 
 	cancelCmd.Flags().StringP("title", "t", "", "Input the title.")
 
