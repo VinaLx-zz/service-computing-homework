@@ -1,5 +1,7 @@
 # Agenda
 
+![pass](https://api.travis-ci.org/ZexinYan/service-computing-homework.svg?branch=master)
+
 Agenda is a command line meeting manager.
 
 ## Collaborators
@@ -49,11 +51,13 @@ Here are some examples of using Agenda commands.
 #### register
 
 Register a new user named "Alice", with password, email address, and phone number.
+
 ```shell
 ./agenda register -u Alice -p 123alice -m www.Alice.com -t 11111111111
 ```
 
 If you want to register as "Alice" again, you will get:
+
 ```
 there's another user with username Alice
 
@@ -67,74 +71,88 @@ Login as user "Alice" with password "123alice".
 ```
 
 If you have logged in and haven't logged out, you will get:
+
 ```
 Action login requires an logout state
 ```
 
 If you enter a wrong password or a user which does not exist, you will get:
+
 ```
 Authentication Fail
 ```
 
 #### createMeetings
 Create a meeting named "ABC_Meeting" as the host, which runs from Nov,1,2017 to Nov,3,2017. And invite "Bob" and "Carlos" as participators. 
+
 ```shell
 ./agenda createMeetings -t ABC_Meeting -p Bob Carlos -s 2017-11-01 -e 2017-11-03
 ```
 
 If succeed, you will get:
+
 ```
 meeting hosted
 ```
 
 If the name of meeting has been used, you will get:
+
 ```
 there's another meeting with title: ABC_Meeting
 ```
 
 If the time overlaps with some of the participators' schedule, you will get:
+
 ```
 there are time conflict of some participants
 ```
 
 If the start time of meeting is set later than end time by mistake, you will get:
+
 ```
 meeting should end later than start
 ```
 
 If you enter the time in invalid format, you will get:
+
 ```
 invalid time format: 2017-11-1
 ```
 
 #### changeParticipators
 Add "David" as a participator of meeting "ABC_Meeting". Notice that user "David" must be registered.
+
 ```shell
 ./agenda changeParticipators -t ABC_Meeting -p David
 ```
 
 If David is already a participators of this meeting, you will get:
+
 ```
 user 'David' is already a participant of meeting 'ABC_Meeting'
 ```
 
 If the meeting does not exist, you will get:
+
 ```
 meeting doesn't exist: C_Meeting
 ```
 
 To delete "David" from meeting "ABC_Meeting", you should add "-y" in your command.
+
 ```shell
 ./agenda changeParticipators -t ABC_Meeting -p David -y
 ```
 
 #### cancel
 Cancel the meeting "ABC_Meeting" that is hosted by you.
+
 ```shell
 ./agenda cancel -t ABC_Meeting
 ```
 
 If you enter a title that does not exist, you will get:
+
 ```
 meeting doesn't exist: myMeeting
 ```
@@ -144,21 +162,25 @@ meeting doesn't exist: myMeeting
 In this case, we assume that we log in as user "Bob" and as below, "Bob" has been invited to the meeting "ABC_Meeting" hosted by "Alice".
 
 Quit the meeting "ABC_Meeting" of which "Bob" is a participator.
+
 ```shell
 ./agenda quit -t ABC_Meeting
 ```
 
 If you enter a title but Agenda system finds that you are not a participator of the meeting, you will get:
+
 ```
 user 'Bob' is not a participant of meeting 'ABC_Meeting'
 ```
 
 #### list
 List all the user that have been registerd.
+
 ```shell
 ./agenda list
 ```
 And you will get their information listed as follow:
+
 ```
 Username Email Phone
 'Alice' 'www.Alice.com' '11111111111'
@@ -171,11 +193,13 @@ Username Email Phone
 
 #### listMeetings
 List all the meeting starts later than Oct,1,2017 and ends before Dec,01,2017.
+
 ```shell
 ./agenda listMeetings -s 2017-10-01 -e 2017-12-01
 
 ```
 And you will get:
+
 ```
 title: ABC_Meeting
   host: Alice
@@ -184,11 +208,13 @@ title: ABC_Meeting
 ```
 
 If the start time of meeting is set later than end time by mistake, you will get:
+
 ```
 meeting should end later than start
 ```
 
 If you enter the time in invalid format, you will get:
+
 ```
 invalid time format: 2017-10-1
 ```
@@ -196,6 +222,7 @@ invalid time format: 2017-10-1
 #### clear
 Clear all meetings you attended or created.
 Be careful to use this command. All the meetings you host or participate in will be deleted.
+
 ```shell
 ./agenda clear
 ```
@@ -204,6 +231,7 @@ Be careful to use this command. All the meetings you host or participate in will
 Delete your account.
 Be careful to use this command. All of the information about you will be erased, and there is no way to get it back.
 The meetings you host will be deleted, and you will quit all the meetings you participate in automatically.
+
 ```shell
 ./agenda delete
 ```
