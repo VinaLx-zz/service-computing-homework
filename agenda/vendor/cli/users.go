@@ -68,8 +68,8 @@ var logoutCmd = &cobra.Command{
 
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "",
-	Long: ``,
+	Short: "list Users",
+	Long: `Using this command, you will get a list of users who have registered!`,
 	Run: func(com *cobra.Command, args []string) {
 		cmd.ShowUsers()
 	},
