@@ -84,10 +84,10 @@ Authentication Fail
 
 #### createMeetings
 Create a meeting named "ABC_Meeting" as the host, which runs from Nov,1,2017 to Nov,3,2017. And invite "Bob" and "Carlos" as participators. 
-
 ```shell
-./agenda createMeetings -t ABC_Meeting -p Bob Carlos -s 2017-11-01 -e 2017-11-03
+./agenda createMeetings -t ABC_Meeting -p "Bob Carlos" -s 2017-11-01 -e 2017-11-03
 ```
+
 
 If succeed, you will get:
 

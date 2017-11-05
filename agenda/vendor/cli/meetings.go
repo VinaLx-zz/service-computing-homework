@@ -59,7 +59,7 @@ var changeParticipatorsCmd = &cobra.Command{
 		participators := strings.Split(participatorStr, " ")
 		
 		deleteOrNot, _ := comd.Flags().GetBool("delete")
-		if deleteOrNot {
+		if !deleteOrNot {
 			var error int
 			for _, each := range participators {
 				error = cmd.AddParticipant(title, each)
