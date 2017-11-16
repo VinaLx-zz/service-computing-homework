@@ -12,3 +12,4 @@ Notice (**for TAs and teacher**), the "Blog" part of homework is shown in `READM
 - Week 6: CLI programming basic: [`selpg`](https://www.ibm.com/developerworks/cn/linux/shell/clutil/index.html)
 - Week 7-8: Agenda, a meeting manager
 - Week 9: Simple HTTP Server
+- Week 11: Simple HTTP Server 2
