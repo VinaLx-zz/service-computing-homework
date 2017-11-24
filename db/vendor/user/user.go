@@ -1,8 +1,17 @@
 package user
 
-import "time"
+import (
+	"time"
+)
 
 var count uint64
+
+// Dao is User Data Access Object
+type Dao interface {
+	StoreUser(u *User) error
+	GetAllUsers() ([]*User, error)
+	GetUser(uid uint64) (*User, error)
+}
 
 // User type
 type User struct {

@@ -2,7 +2,8 @@ package router
 
 import (
 	"args"
-	"database"
+	"database/ormdao"
+	"database/sqldao"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -50,11 +51,11 @@ func illegalForm(w http.ResponseWriter, form url.Values, params ...string) bool 
 	return false
 }
 
-func getDao() database.UserDao {
+func getDao() (user.Dao, error) {
 	if *args.ORM {
-		return database.ORMDao()
+		return ormdao.Get()
 	}
-	return database.PureSQLDao()
+	return sqldao.Get()
 }
 
 func adduser(w http.ResponseWriter, req *http.Request) {
@@ -63,7 +64,12 @@ func adduser(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	u := user.NewUser(req.Form["username"][0], req.Form["password"][0])
-	err := getDao().StoreUser(u)
+	dao, err := getDao()
+	if err != nil {
+		failure(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	err = dao.StoreUser(u)
 	if err != nil {
 		failure(w, http.StatusInternalServerError, err.Error())
 	} else {
@@ -80,7 +86,12 @@ func getuser(w http.ResponseWriter, req *http.Request) {
 		failure(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	u, err := getDao().GetUser(uid)
+	dao, err := getDao()
+	if err != nil {
+		failure(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	u, err := dao.GetUser(uid)
 	if err != nil {
 		failure(w, http.StatusInternalServerError, err.Error())
 	} else {
@@ -88,7 +99,12 @@ func getuser(w http.ResponseWriter, req *http.Request) {
 	}
 }
 func getallusers(w http.ResponseWriter, req *http.Request) {
-	us, err := getDao().GetAllUsers()
+	dao, err := getDao()
+	if err != nil {
+		failure(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	us, err := dao.GetAllUsers()
 	if err != nil {
 		failure(w, http.StatusInternalServerError, err.Error())
 	} else {
