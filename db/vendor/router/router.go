@@ -35,6 +35,7 @@ func success(w http.ResponseWriter, data interface{}) {
 }
 func failure(w http.ResponseWriter, code int, message string) {
 	w.WriteHeader(code)
+	log.Printf("INFO: %s", message)
 	jsonResponse(w, &response{
 		OK:   false,
 		Data: message,

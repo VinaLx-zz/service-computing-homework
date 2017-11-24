@@ -22,10 +22,10 @@ func prepareDB() (*sql.DB, error) {
 	}
 	_, err = db.Exec(
 		`CREATE TABLE IF NOT EXISTS User (
-			ID INTEGER NOT NULL PRIMARY KEY,
-			Username TEXT NOT NULL,
-			Password TEXT NOT NULL,
-			SignUpDate TEXT
+			id INTEGER NOT NULL PRIMARY KEY,
+			username VARCHAR(255) NOT NULL,
+			password VARCHAR(255) NOT NULL,
+			sign_up_date DATETIME NOT NULL
 		);`)
 	if err != nil {
 		return nil, err
@@ -56,7 +56,7 @@ func Get() (user.Dao, error) {
 
 func (ud *userDB) StoreUser(u *user.User) error {
 	_, err := ud.db.Exec(
-		`INSERT INTO User (ID, Username, Password, SignUpDate)
+		`INSERT INTO User (id, username, password, sign_up_date)
 		VALUES (?, ?, ?, ?)`, u.ID, u.Username, u.Password, u.SignUpDate)
 	return err
 }
@@ -78,7 +78,7 @@ func (ud *userDB) GetAllUsers() ([]*user.User, error) {
 }
 
 func (ud *userDB) GetUser(uid uint64) (*user.User, error) {
-	row, err := ud.db.Query("SELECT * FROM User WHERE uid = ?", uid)
+	row, err := ud.db.Query("SELECT * FROM User WHERE id = ?", uid)
 	if err != nil {
 		return nil, err
 	}
