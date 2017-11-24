@@ -18,7 +18,7 @@ type User struct {
 	UID        uint64
 	Username   string
 	Password   string
-	SignUpTime time.Time
+	SignUpDate time.Time
 }
 
 // ResetUID count
@@ -32,7 +32,7 @@ func NewUser(username, password string) *User {
 		UID:        count,
 		Username:   username,
 		Password:   password,
-		SignUpTime: time.Now(),
+		SignUpDate: time.Now(),
 	}
 	count++
 	return &u

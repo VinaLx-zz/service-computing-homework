@@ -6,6 +6,7 @@ import (
 	"database/sqldao"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -14,28 +15,29 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// Response ..
 type response struct {
-	ok   bool
-	data interface{}
+	OK   bool
+	Data interface{}
 }
 
-func jsonResponse(w http.ResponseWriter, resp response) {
+func jsonResponse(w http.ResponseWriter, resp *response) {
 	encoder := json.NewEncoder(w)
 	encoder.Encode(resp)
 }
 
 func success(w http.ResponseWriter, data interface{}) {
 	w.WriteHeader(http.StatusOK)
-	jsonResponse(w, response{
-		ok:   true,
-		data: data,
+	jsonResponse(w, &response{
+		OK:   true,
+		Data: data,
 	})
 }
 func failure(w http.ResponseWriter, code int, message string) {
 	w.WriteHeader(code)
-	jsonResponse(w, response{
-		ok:   false,
-		data: message,
+	jsonResponse(w, &response{
+		OK:   true,
+		Data: message,
 	})
 }
 
@@ -66,9 +68,13 @@ func adduser(w http.ResponseWriter, req *http.Request) {
 	u := user.NewUser(req.Form["username"][0], req.Form["password"][0])
 	dao, err := getDao()
 	if err != nil {
+		log.Printf("ERROR: %s", err.Error())
 		failure(w, http.StatusInternalServerError, err.Error())
 		return
 	}
+	log.Printf(
+		"INFO: adding user, username '%s', password '%s'",
+		u.Username, u.Password)
 	err = dao.StoreUser(u)
 	if err != nil {
 		failure(w, http.StatusInternalServerError, err.Error())
