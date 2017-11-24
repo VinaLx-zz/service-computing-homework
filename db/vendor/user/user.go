@@ -15,10 +15,10 @@ type Dao interface {
 
 // User type
 type User struct {
-	UID        uint64
-	Username   string
-	Password   string
-	SignUpDate time.Time
+	ID         uint64
+	Username   string    `gorm:"not null"`
+	Password   string    `gorm:"not null"`
+	SignUpDate time.Time `gorm:"not null"`
 }
 
 // ResetUID count
@@ -29,7 +29,7 @@ func ResetUID(i uint64) {
 // NewUser returns a new user with a new uid
 func NewUser(username, password string) *User {
 	u := User{
-		UID:        count,
+		ID:         count,
 		Username:   username,
 		Password:   password,
 		SignUpDate: time.Now(),

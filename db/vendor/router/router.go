@@ -36,7 +36,7 @@ func success(w http.ResponseWriter, data interface{}) {
 func failure(w http.ResponseWriter, code int, message string) {
 	w.WriteHeader(code)
 	jsonResponse(w, &response{
-		OK:   true,
+		OK:   false,
 		Data: message,
 	})
 }

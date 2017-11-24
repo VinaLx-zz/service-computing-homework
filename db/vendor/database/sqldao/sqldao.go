@@ -1,6 +1,7 @@
 package sqldao
 
 import (
+	"args"
 	"database/sql"
 	"log"
 	"time"
@@ -14,14 +15,14 @@ type userDB struct {
 var d *userDB
 
 func prepareDB() (*sql.DB, error) {
-	db, err := sql.Open("sqlite3", "./users.db")
+	db, err := sql.Open("sqlite3", *args.DB)
 	if err != nil {
 		log.Printf("ERROR: %s", err.Error())
 		return nil, err
 	}
 	_, err = db.Exec(
 		`CREATE TABLE IF NOT EXISTS User (
-			UID INTEGER NOT NULL PRIMARY KEY,
+			ID INTEGER NOT NULL PRIMARY KEY,
 			Username TEXT NOT NULL,
 			Password TEXT NOT NULL,
 			SignUpDate TEXT
@@ -55,8 +56,8 @@ func Get() (user.Dao, error) {
 
 func (ud *userDB) StoreUser(u *user.User) error {
 	_, err := ud.db.Exec(
-		`INSERT INTO User (UID, Username, Password, SignUpDate)
-		VALUES (?, ?, ?, ?)`, u.UID, u.Username, u.Password, u.SignUpDate)
+		`INSERT INTO User (ID, Username, Password, SignUpDate)
+		VALUES (?, ?, ?, ?)`, u.ID, u.Username, u.Password, u.SignUpDate)
 	return err
 }
 
@@ -69,7 +70,7 @@ func (ud *userDB) GetAllUsers() ([]*user.User, error) {
 	for row.Next() {
 		var u user.User
 		var date string
-		row.Scan(&u.UID, &u.Username, &u.Password, &date)
+		row.Scan(&u.ID, &u.Username, &u.Password, &date)
 		u.SignUpDate = sqliteDateToTime(date)
 		result = append(result, &u)
 	}
@@ -84,7 +85,7 @@ func (ud *userDB) GetUser(uid uint64) (*user.User, error) {
 	if row.Next() {
 		var u user.User
 		var date string
-		row.Scan(&u.UID, &u.Username, &u.Password, &date)
+		row.Scan(&u.ID, &u.Username, &u.Password, &date)
 		u.SignUpDate = sqliteDateToTime(date)
 		return &u, nil
 	}
